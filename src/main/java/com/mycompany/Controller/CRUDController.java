@@ -14,19 +14,25 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  *
  * @author owner
  */
+
+//Better Name for this controller would have been Hotel Controller since it deals with everything in relation to Hotels
 //@WebServlet(name = "CRUDControl", urlPatterns = {"/CRUD"})
 public class CRUDController extends HttpServlet {
-
+    
+    
+    
     //this is the page information will be forwarded to
     private static final String RESULT_PAGE = "HotelPage.jsp";
 
@@ -39,7 +45,8 @@ public class CRUDController extends HttpServlet {
     private static String UPDATE_TYPE = "update";
     private static String EDIT_TYPE = "edit";
     private static String VIEW_TYPE = "view";
-    private static String ALL_TYPE = "all";
+    //private static String ALL_TYPE = "all";
+    //private static String NAME_TYPE = "name";
     String editForm = null;
 
     /**
@@ -53,13 +60,22 @@ public class CRUDController extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         response.setContentType("text/html");
+        //create a session variable and get it from the request object
+        //If there is no sessoin object in memory one is created and if there is the existing one is retrived
+        HttpSession session = request.getSession();
+        ServletContext ctx = request.getServletContext();
+        
+        //we are setting the specific types equal to strings through the xml file with context-param
+        String NAME_TYPE = ctx.getInitParameter("NAME_TYPE");
+        String ALL_TYPE = ctx.getInitParameter("ALL_TYPE");
+        
 
         //setting a variable equal to the key variable defined above
         String type = request.getParameter(KEY);
 
         //we are checking to see which value was set to key in query string
+        /* ------------------------ ALL TYPE ---------------------------- */
         if (ALL_TYPE.equals(type)) {
 
             //Create new instance of model
@@ -77,7 +93,7 @@ public class CRUDController extends HttpServlet {
             } catch (Exception ex) {
                 Logger.getLogger(CRUDController.class.getName()).log(Level.SEVERE, null, ex);
             }
-
+        /* ------------------------ EDIT TYPE ---------------------------- */
         } else if (EDIT_TYPE.equals(type)) {
             //retrieve values from form
             String idValue = request.getParameter(KEY2);
@@ -103,7 +119,7 @@ public class CRUDController extends HttpServlet {
             }
             String editForm = "not null";
             request.setAttribute("editForm", editForm);
-
+        /* ------------------------ UPDATE TYPE ---------------------------- */    
         } else if (UPDATE_TYPE.equals(type)) {
             
             //retrieve values from form
@@ -144,7 +160,7 @@ public class CRUDController extends HttpServlet {
             } catch (Exception ex) {
                 Logger.getLogger(CRUDController.class.getName()).log(Level.SEVERE, null, ex);
             }
-
+        /* ------------------------ DELETE TYPE ---------------------------- */
         } else if (DELETE_TYPE.equals(type)) {
             String tableName = "hotel";         //This is our table name
             String columnName = "hotel_id";     //This is our column name we want to identify record by
@@ -175,7 +191,7 @@ public class CRUDController extends HttpServlet {
             } catch (Exception ex) {
                 Logger.getLogger(CRUDController.class.getName()).log(Level.SEVERE, null, ex);
             }
-
+        /* ------------------------ INSERT TYPE ---------------------------- */
         } else if (INSERT_TYPE.equals(type)) {
             //retrieve values from form
             String name = request.getParameter("hotelNameInsert");
@@ -213,9 +229,31 @@ public class CRUDController extends HttpServlet {
             } catch (Exception ex) {
                 Logger.getLogger(CRUDController.class.getName()).log(Level.SEVERE, null, ex);
             }
+        /* ------------------------ VIEW TYPE ---------------------------- */
         } else if (VIEW_TYPE.equals(type)) {
             String insertForm = "not null";
             request.setAttribute("insertForm", insertForm);
+        /* ------------------------ SESSION NAME ---------------------------- */
+        } else if (NAME_TYPE.equals(type)) {
+            String userName = request.getParameter("name");
+            session.setAttribute("userName", userName);
+            
+            //Create new instance of model
+            HotelService hs = new HotelService();
+
+            //call method from model to calculate area with retrieved values
+            //set the result of the calculation into the result variable
+            List<Hotel> hotels = null;
+            try {
+                hotels = hs.getAllHotels();
+
+                //set the attribute with the calculated result
+                request.setAttribute("hotelList", hotels);
+
+            } catch (Exception ex) {
+                Logger.getLogger(CRUDController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        /* ------------------------ ALL TYPE ---------------------------- */
         }
 
         //This is faster than requestdispatcher
@@ -224,7 +262,7 @@ public class CRUDController extends HttpServlet {
                 = request.getRequestDispatcher(RESULT_PAGE);
         //forwarding the request and response
         view.forward(request, response);
-
+        
     }
 
 // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
@@ -242,78 +280,6 @@ public class CRUDController extends HttpServlet {
         processRequest(request, response);
 
         response.setContentType("text/html");
-
-        //setting a variable equal to the key variable defined above
-        String type = request.getParameter(KEY);
-
-//        
-//        private static String INSERT_TYPE = "insert";
-//    private static String DELETE_TYPE = "delete";
-//    private static String UPDATE_TYPE = "update";
-//    private static String EDIT_TYPE = "edit";
-//    private static String ALL_TYPE = "all";
-        //we are checking to see which value was set to key in query string
-        if (ALL_TYPE.equals(type)) {
-            //retrieve values from form
-
-            //Create new instance of model
-            HotelService hs = new HotelService();
-            List<Hotel> hotels;
-            try {
-                //call method to get all hotel records
-                hotels = hs.getAllHotels();
-
-            } catch (Exception ex) {
-                Logger.getLogger(CRUDController.class
-                        .getName()).log(Level.SEVERE, null, ex);
-            }
-
-            //set the attribute with all the results
-//            request.setAttribute("triArea", hotels);
-        } //else if (INSERT_TYPE.equals(type)) {
-        //retrieve values from form
-//            String length = request.getParameter("length");
-//            String width = request.getParameter("width");
-//            
-//            //If length or width is empty display error message else calculate the area
-//            if (length.isEmpty() || width.isEmpty()) {
-//                String resultError = "You cannot submit an empty value.";
-//                request.setAttribute("recError", resultError);
-//            } else {
-//                //Create new instance of model
-//                AreaCalculator ac = new AreaCalculator();
-//
-//                //call method from model to calculate area with retrieved values
-//                //set the result of the calculation into the result variable
-//                String result = ac.getRectangleArea(length, width);
-//
-//                //set the attribute with the calculated result
-//                request.setAttribute("recArea", result);
-//            }
-//        } else if (UPDATE_TYPE.equals(type)) {
-//            //retrieve values from form
-//            String radius = request.getParameter("radius");
-//
-//            //Create new instance of model
-//            AreaCalculator ac = new AreaCalculator();
-//
-//            //call method from model to calculate area with retrieved values
-//            //set the result of the calculation into the result variable
-//            String result = ac.getCircleArea(radius);
-//
-//            //set the attribute with the calculated result
-//            request.setAttribute("circArea", result);
-//        } else if (EDIT_TYPE.equals(type)) {
-//            
-//        } else if (DELETE_TYPE.equals(type)) {
-//            
-//        }
-
-        //forwards the data to the result page 
-        RequestDispatcher view
-                = request.getRequestDispatcher(RESULT_PAGE);
-        //forwarding the request and response
-        view.forward(request, response);
 
     }
 

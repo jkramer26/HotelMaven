@@ -30,10 +30,19 @@
         <param-value>com.mycompany.Model.DB_GenericMySQL</param-value>
     </context-param>
     
-    <!--
+    <context-param>
+        <param-name>NAME_TYPE</param-name>
+        <param-value>name</param-value>
+    </context-param>
+    
+    <context-param>
+        <param-name>ALL_TYPE</param-name>
+        <param-value>all</param-value>
+    </context-param>
+    
     <welcome-file-list>
         <welcome-file>HotelPage.jsp</welcome-file>
     </welcome-file-list>
-    -->
+    
     
 </web-app>

@@ -10,6 +10,21 @@ if (objData == null) {
 }
 --%>
 
+<%
+    //This is checking if our page went through the controller
+    Object objEditForm = request.getAttribute("editForm");
+    Object objInsertForm = request.getAttribute("insertForm");
+    Object objData = request.getAttribute("hotelList");
+    //Check if our hotelList and EditForm is null
+    if (objData == null && objEditForm == null) {
+        //check if our hotelList and Insert form is null
+        if (objData == null && objInsertForm == null) {
+            //if both forms and list is null then we need to go through the controller. 
+            response.sendRedirect("CRUD?action=all");
+        }  
+    } 
+%>
+
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.util.*" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -21,12 +36,28 @@ if (objData == null) {
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Hotels</title>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+        <link href="bootstrap-sortable.css" rel="stylesheet" type="text/css"/>
     </head>
 </head>
 <body>
+
     <div class="container-fluid">
         <h1>Hotels</h1>
-        
+
+        <c:choose>
+            <c:when test="${userName == null}">
+                <c:set var="nameFormVisible" value="display:visible;" />
+            </c:when>
+            <c:otherwise>
+                <c:set var="nameFormVisible" value="display:none;" />
+            </c:otherwise>
+        </c:choose>
+        <form method="POST" action="CRUD?action=name" style="${nameFormVisible}">
+            Enter your Name: <input name="name" value="" /> <br>
+            <input name="submitName" value="Submit" type="submit">
+        </form>
+        <h1>${userName}</h1>
+
         <!-- ---------------- Hotel List ---------------- -->
         <c:choose>
             <c:when test="${hotelList == null}">
@@ -37,7 +68,7 @@ if (objData == null) {
             </c:otherwise>
         </c:choose>
         <div class="table-responsive" style="${tableVisible}">
-            <table class="table">
+            <table class="table sortable">
                 <thead>
                 <th>ID</th>
                 <th>Name</th>
@@ -47,7 +78,7 @@ if (objData == null) {
                 <th>ZipCode</th>
                 <th>Notes</th>
                 <th colspan="2"><button class="btn btn-info" type="button" id="hotelId" name="hotelId"  onclick="location.href = 'CRUD?action=view'">Insert Hotel Record</button></th>
-            </thead>
+                </thead>
                 <tbody>
                     <c:forEach var="hotel" items="${hotelList}" >
                         <tr>
@@ -65,7 +96,7 @@ if (objData == null) {
                 </tbody>
             </table>
         </div>
-        
+
         <!-- --------------------------------------- Edit Hotel Record Form --------------------------------------------------- -->
         <c:choose>
             <c:when test="${editForm == null}">
@@ -189,7 +220,10 @@ if (objData == null) {
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-    <!-- Latest compiled and minified JavaScript -->
+    <!-- Bootstrap JS -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+    <!-- Sortable JS -->
+    <script src="bootstrap-sortable.js" type="text/javascript"></script>
+    <script src="moment.min.js" type="text/javascript"></script>
 </body>
 </html>

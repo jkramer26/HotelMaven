@@ -12,13 +12,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
+ *  NEED TO MAKE THIS MORE FLEXIBLE BY USING GENERIC DB STRAT OBJECT
  * @author jkramer26
  */
 public class HotelDAO implements IHotelDAO {
     //could use factory pattern for this
     private static final String FIND_ALL_HOTELS = "hotel";
+    //THIS VARIABLE SHOULD BE REMOVED FOR STRAT OBJECT
     private DB_GenericMySQL db;
+    //THIS VARIABLES SHOULD BE PUT IN CONTEXT PARAM IN XML FILE
     private String driverClassName = "com.mysql.jdbc.Driver";
     private String url = "jdbc:mysql://localhost:3306/hoteldb";
     private String userName = "root";
@@ -213,8 +215,8 @@ public class HotelDAO implements IHotelDAO {
         hotel.setHotelId(8);
 //        hotel.setHotelId(7);
 //        dao.openConnection();
-        dao.saveHotels(hotel);
-        System.out.println(hotel.getHotelId());
+//        dao.saveHotels(hotel);
+//        System.out.println(hotel.getHotelId());
 //        System.out.println(dao.getAllHotels());
 //        dao.deleteHotels("hotel", "hotel_name", "Test");
 //        dao.deleteHotel("hotel", "hotel_name", "Hotel California");
@@ -222,6 +224,6 @@ public class HotelDAO implements IHotelDAO {
 //            System.out.println(hotel);
 //        }
 //        System.out.println(dao.getAllHotels());
-//        System.out.println(dao.getHotelById("1"));
+        System.out.println(dao.getHotelById("1"));
     }
 }
