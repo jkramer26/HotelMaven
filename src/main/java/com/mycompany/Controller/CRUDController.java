@@ -253,7 +253,7 @@ public class CRUDController extends HttpServlet {
             } catch (Exception ex) {
                 Logger.getLogger(CRUDController.class.getName()).log(Level.SEVERE, null, ex);
             }
-        /* ------------------------ ALL TYPE ---------------------------- */
+        /* ------------------------ ---------------------------- */
         }
 
         //This is faster than requestdispatcher

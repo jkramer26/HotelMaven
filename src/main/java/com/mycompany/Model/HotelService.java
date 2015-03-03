@@ -63,11 +63,11 @@ public class HotelService {
 //        hotelService.saveHotel(hotel);
          
 //      hotelService.deleteHotel("hotel", "hotel_name", "Test");
+        System.out.println(hotelService.getAllHotels());
         
-        
-        List<Hotel> hotels = hotelService.getAllHotels();
-        for (int i = 0; i < hotels.size(); i++) {
-            System.out.println(hotels.get(i));
-        }
+//        List<Hotel> hotels = hotelService.getAllHotels();
+//        for (int i = 0; i < hotels.size(); i++) {
+//            System.out.println(hotels.get(i));
+//        }
     }
 }

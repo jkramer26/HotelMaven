@@ -68,24 +68,23 @@ public class DB_GenericMySQL implements IDB_GenericMySQL {
              */
             //We are executing our sql statement and returning it in a result set
             rs = stmt.executeQuery(sql);
-            
+
             //Getting meta information about table from result set
             metaData = rs.getMetaData();
-            
+
             //getting the number of columns in the table 
             int colCount = metaData.getColumnCount();
-            
-            
+
             /**
-             * Moving the cursor to the next row in the table. When there are no 
+             * Moving the cursor to the next row in the table. When there are no
              * more rows a false will be returned
              */
             while (rs.next()) {
                 //Creating a new map each loop to hold column data for a record
                 Map<String, Object> record = new HashMap();
-                
+
                 //Looping through columns and putting the column name and value into a record
-                for (int i = 0; i < colCount; i++) {
+                for (int i = 1; i < colCount + 1; i++) {
                     record.put(metaData.getColumnName(i), rs.getObject(i));
                 }
                 //Adding one record to our list of records
@@ -104,7 +103,7 @@ public class DB_GenericMySQL implements IDB_GenericMySQL {
         }
         return records;
     }
-
+    
     /**
      *
      * @param tableName
@@ -114,36 +113,37 @@ public class DB_GenericMySQL implements IDB_GenericMySQL {
      * @throws SQLException
      */
     @Override
+
     public final Map getRecordById(String tableName, String primaryKeyField,
             Object keyValue) throws SQLException {
-        
+
         //Creating a map to store columns and values of a single record
         final Map record = new HashMap();
         try {
             //We are creating our statement object and needs a connection with create method
             stmt = conn.createStatement();
-            
+
             //String to help build sql statement with keyValue
             String sqlKeyValue;
-            
+
             //If the keyValue is a string then add equals and quotes otherwise just an equals sign
             if (keyValue instanceof String) {
                 sqlKeyValue = "= '" + keyValue + "'";
             } else {
                 sqlKeyValue = "=" + keyValue;
             }
-            
+
             //Building complete sql statement
             final String sql = "SELECT * FROM " + tableName + " WHERE "
                     + primaryKeyField + sqlKeyValue;
             //Executing sql statement and returning it to the result set
             rs = stmt.executeQuery(sql);
-            
+
             //getting the metadata and column count from metadata
             metaData = rs.getMetaData();
             metaData.getColumnCount();
             final int fields = metaData.getColumnCount();
-            
+
             //Looping through the columns of the returned record and storing the column name and value
             if (rs.next()) {
                 for (int i = 1; i <= fields; i++) {
@@ -164,23 +164,23 @@ public class DB_GenericMySQL implements IDB_GenericMySQL {
     }
 
     /**
-     * 
+     *
      * @param tableName
      * @param whereField
      * @param whereValue
      * @return
-     * @throws SQLException 
+     * @throws SQLException
      */
     public final int deleteRecords(String tableName, String whereField,
             Object whereValue) throws SQLException {
-        
+
         int recordsDeleted = 0;
 
         try {
             //Building a prepared statement with connection, tablename, and the primary key field
             pstmt = buildDeleteStatement(conn, tableName, whereField);
 
-            //we are converting the statement to whatever type the whereValue is 
+            //we are converting the statement to whatever type the whereValue is and setting in place of the ? in the prepared statement
             if (whereField != null) {
                 if (whereValue instanceof String) {
                     pstmt.setString(1, (String) whereValue);
@@ -220,35 +220,54 @@ public class DB_GenericMySQL implements IDB_GenericMySQL {
     }
 
     /**
-     * 
+     *
      * @param conn_loc
      * @param tableName
      * @param whereField
      * @return
-     * @throws SQLException 
+     * @throws SQLException
      */
     private PreparedStatement buildDeleteStatement(Connection conn_loc,
             String tableName, String whereField) throws SQLException {
 
+        //creating a sql statement and then appending the passed in table name to it
         final StringBuffer sql = new StringBuffer("DELETE FROM ");
         sql.append(tableName);
-
+        //DELETE FROM hoteldb where wherfield = ?
+        //making sure the wherefield passed in is not null
         if (whereField != null) {
+            //appending where to the end of the sql statement
             sql.append(" WHERE ");
+            //appending the whereField aka column name to the sql statement 
+            //also appending the = ?. The ? will be replace by a passed in value in the deletemethod above
             (sql.append(whereField)).append(" = ?");
         }
 
+        //Making sure sql statement is a string and returning it
         final String finalSQL = sql.toString();
         return conn_loc.prepareStatement(finalSQL);
     }
 
+    /**
+     *
+     * @param tableName
+     * @param colDescriptors
+     * @param colValues
+     * @param whereField
+     * @param whereValue
+     * @return
+     * @throws SQLException
+     * @throws Exception
+     */
     @Override
     public final int updateRecords(String tableName, List colDescriptors,
             List colValues, String whereField, Object whereValue)
             throws SQLException, Exception {
 
         int recordsUpdated = 0;
+
         try {
+            //build sql statement
             pstmt = buildUpdateStatement(conn, tableName, colDescriptors,
                     whereField);
 
@@ -257,6 +276,7 @@ public class DB_GenericMySQL implements IDB_GenericMySQL {
             boolean doWhereValueFlag = false;
             Object obj = null;
 
+            //While still able to iterate over colValues
             while (i.hasNext() || doWhereValueFlag) {
                 if (!doWhereValueFlag) {
                     obj = i.next();
@@ -392,6 +412,71 @@ public class DB_GenericMySQL implements IDB_GenericMySQL {
         return conn_loc.prepareStatement(finalSQL);
     }
 
+    public final List<Map<String, Object>> getAllRecordsByField(String tableName, String primaryKeyField, Object keyValue)
+            throws SQLException {
+
+        //Creating a list of maps to store multiple records
+        List<Map<String, Object>> records = new ArrayList<>();
+
+        //String to help build sql statement with keyValue
+        String sqlKeyValue;
+        
+        //Checking if key value is a string or an int
+        if (keyValue instanceof String) {
+            sqlKeyValue = "= '" + keyValue + "'";
+        } else {
+            sqlKeyValue = "=" + keyValue;
+        }
+
+        //Building the sql statement and concatanating the passed in table name, column name, and sql value. Do prepared statement for more security
+        String sql = "select * from " + tableName + " where " + primaryKeyField + sqlKeyValue;
+
+        try {
+            //We are creating our statement object and needs a connection with create method
+            stmt = conn.createStatement();
+
+            /**
+             * Result sets is a way to store and manipulate the records returned
+             * from a SQL query.
+             */
+            //We are executing our sql statement and returning it in a result set
+            rs = stmt.executeQuery(sql);
+
+            //Getting meta information about table from result set
+            metaData = rs.getMetaData();
+
+            //getting the number of columns in the table 
+            int colCount = metaData.getColumnCount();
+
+            /**
+             * Moving the cursor to the next row in the table. When there are no
+             * more rows a false will be returned
+             */
+            while (rs.next()) {
+                //Creating a new map each loop to hold column data for a record
+                Map<String, Object> record = new HashMap();
+
+                //Looping through columns and putting the column name and value into a record
+                for (int i = 1; i < colCount + 1; i++) {
+                    record.put(metaData.getColumnName(i), rs.getObject(i));
+                }
+                //Adding one record to our list of records
+                records.add(record);
+            }
+        } catch (SQLException sqle) {
+            throw sqle;
+        } finally {
+            try {
+                //Close statement and connection
+                stmt.close();
+                conn.close();
+            } catch (SQLException sqle) {
+                throw sqle;
+            }
+        }
+        return records;
+    }
+
     public static void main(String[] args) throws SQLException, ClassNotFoundException, Exception {
         String driverClassName = "com.mysql.jdbc.Driver";
         String url = "jdbc:mysql://localhost:3306/hoteldb";
@@ -423,8 +508,10 @@ public class DB_GenericMySQL implements IDB_GenericMySQL {
 //        obj = 1;
 ////        System.out.println(db.getRecordById("hotel", "hotel_id", obj));
 ////        System.out.println(db.getAllRecords("hotel"));
-        db.deleteRecords("hotel", "hotel_id", 5);
+//        db.deleteRecords("hotel", "hotel_id", 5);
 
-        //Batch report
+        System.out.println(db.getAllRecordsByField("hotel", "notes", "Updated Hotel"));
+        
+        
     }
 }
